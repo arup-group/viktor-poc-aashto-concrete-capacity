@@ -1,0 +1,9 @@
+.vscode
+
+venv
+
+__pycache__
+
+devnotes.txt
+
+run.ps1

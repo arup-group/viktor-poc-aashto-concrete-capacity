@@ -1,0 +1,7 @@
+app_type = "editor"
+python_version = "3.11"
+registered_name = "aashto-concrete-capacity"
+
+oauth2_integrations = [
+  "azure-ad"
+]
