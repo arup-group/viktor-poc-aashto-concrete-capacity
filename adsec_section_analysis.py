@@ -24,9 +24,9 @@ def _ensure_adsec():
     if _ADSEC_READY:
         return
 
-    import os
-    if os.getenv("SKIP_ADSEC_IMPORT") == "1":
-        raise RuntimeError("AdSec disabled (SKIP_ADSEC_IMPORT=1)")
+    # import os
+    # if os.getenv("SKIP_ADSEC_IMPORT") == "1":
+    #     raise RuntimeError("AdSec disabled (SKIP_ADSEC_IMPORT=1)")
 
     import oasys.adsec  # bootstrap CLR
 
@@ -138,7 +138,7 @@ def create_composite_section(concrete_modulus, concrete_depth, concrete_width, s
     # Save svg
     flattened_section = ad_sec.Flatten(section)
     svg_str = SectionImageBuilder(flattened_section).Svg()
-    
+
     return utilisation, svg_str
 
 if __name__ == "__main__":
