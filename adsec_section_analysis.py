@@ -14,10 +14,7 @@
 # from OasysUnits.Units import ForceUnit, LengthUnit, MomentUnit
 
 # Import other modules
-from reportlab.graphics import renderPM
-from svglib.svglib import svg2rlg
 import pandas as pd
-from pathlib import Path
 
 # --- put this near the top of your module (remove all top-level Oasys imports) ---
 _ADSEC_READY = False
@@ -110,20 +107,6 @@ def calculate_utilisation(axial, Mx, My, solution):
     utilisation = round(strength_result.LoadUtilisation.Percent, 1)
     return utilisation
 
-# Function to save section image as SVG and PNG
-def save_section_image(ad_sec, section, file_name_base):
-    flattened_section = ad_sec.Flatten(section)
-    svg_str = SectionImageBuilder(flattened_section).Svg()
-
-    # Save the SVG file
-    svg_file_path = f"./images/{file_name_base}.svg"
-    with Path(svg_file_path).open(mode="w") as file:
-        file.write(svg_str)
-
-    # Convert SVG to PNG using svglib
-    drawing = svg2rlg(svg_file_path)
-    renderPM.drawToFile(drawing, f"./images/{file_name_base}.png", fmt="PNG")
-
 # Main function to create one section and calculate utilization    
 def create_composite_section(concrete_modulus, concrete_depth, concrete_width, steel_depth, steel_weight, perimeter_rebar_diameter, perimeter_rebar_count, stirrup_diameter, P_kips, Mx_kips, My_kips):
 
@@ -155,10 +138,7 @@ def create_composite_section(concrete_modulus, concrete_depth, concrete_width, s
     # Save svg
     flattened_section = ad_sec.Flatten(section)
     svg_str = SectionImageBuilder(flattened_section).Svg()
-
-    # Always save the section image so the PNG and SVG are up to date
-    file_name_base = f"section_CAT W W{steel_depth}x{steel_weight}_{concrete_depth}x{concrete_width}_test"
-    save_section_image(ad_sec, section, file_name_base)
+    
     return utilisation, svg_str
 
 if __name__ == "__main__":

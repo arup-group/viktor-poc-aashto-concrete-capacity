@@ -33,6 +33,7 @@ class Parametrization(vkt.Parametrization):
     run_counter = vkt.HiddenField("Run Counter")
     section_utilization = vkt.HiddenField("Section Utilization")
     section_svg = vkt.HiddenField("Section SVG")
+    last_error = vkt.HiddenField("Last Error")
 
 class Controller(vkt.Controller):
     @vkt.ImageView("Section Image")
@@ -60,6 +61,9 @@ class Controller(vkt.Controller):
         else:
             new_count = 1
 
+        utilization = None
+        section_svg = None
+        last_error = None
         try:
             from adsec_section_analysis import create_composite_section
 
@@ -77,15 +81,29 @@ class Controller(vkt.Controller):
                 params.My_kips
             )
         except Exception as e:
-            print(f"AdSec calculation failed: {e}")
-            utilization = None
-            section_svg = None
+            # Log full exception with stack trace to the configured logger. This
+            # helps capture deployment-only issues (missing native libs, import
+            # errors, auth failures) where prints are not visible.
+            try:
+                self.logger.exception("AdSec calculation failed during run_calc")
+            except Exception:
+                # If logger is not available for some reason, fallback to printing
+                # so at least something is emitted in very limited environments.
+                print("AdSec calculation failed and logger unavailable")
+                import traceback
+
+                traceback.print_exc()
+
+            # Store a short error message for the user interface and return
+            # no results. Keep the full traceback in logs only.
+            last_error = str(e)
 
         return vkt.SetParamsResult(
             {
                 'run_counter': new_count,
                 'section_utilization': utilization,
-                'section_svg': section_svg
+                'section_svg': section_svg,
+                'last_error': last_error,
             }
         )
 
@@ -113,6 +131,17 @@ class Controller(vkt.Controller):
                 status_message="The image is generated and available in the Section Image tab."
             )
         )
+
+        # If there was an error during the last run, show it prominently
+        if hasattr(params, 'last_error') and params.last_error:
+            data_group.add(
+                vkt.DataItem(
+                    "Last Error",
+                    str(params.last_error),
+                    status=vkt.DataStatus.ERROR,
+                    status_message="An error occurred during the last calculation. Check logs for details."
+                )
+            )
 
         return vkt.DataResult(data_group)
 
